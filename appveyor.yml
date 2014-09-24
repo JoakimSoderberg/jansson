@@ -3,4 +3,13 @@ build_script:
   - cd build
   - cmake ..
   - cmake --build . --config Release
-  - ctest --output-on-failure
+  - ctest --output-on-failure --no-compress-output -T Test
+on_finish:
+  - ps: Write-Output "$(Resolve-Path .)"
+  - ps: Write-Output "$env:APPVEYOR_JOB_ID"
+  - ps: $wc = New-Object 'System.Net.WebClient'
+  - ps: $url = "https://ci.appveyor.com/api/testresults/xunit/$env:APPVEYOR_JOB_ID"
+  - ps: Write-Output "$url"
+  - ps: $path = (Resolve-Path .\Testing\*\Test.xml)
+  - ps: Write-Output "$path"
+  - ps: $wc.UploadFile($url, $path)
